@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-import dj_database_url # <-- 1. Add this import
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # <-- Add WhiteNoise here
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,8 +54,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wms_backend.wsgi.application'
 
-# --- This is the updated section ---
-# It now uses the DATABASE_URL from Render, or falls back to sqlite for local dev
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -62,7 +61,6 @@ DATABASES = {
         ssl_require=True if 'RENDER' in os.environ else False,
     )
 }
-# --- End of updated section ---
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -86,3 +84,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+# Static files settings for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
