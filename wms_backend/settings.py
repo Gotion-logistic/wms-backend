@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import dj_database_url # <-- 1. Add this import
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -53,25 +54,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wms_backend.wsgi.application'
 
 # --- This is the updated section ---
-# It checks if we are running on Render and uses the correct database.
-if 'RENDER' in os.environ:
-    # Production settings on Render
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': '/var/data/db.sqlite3',
-        }
-    }
-else:
-    # Local development settings
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# It now uses the DATABASE_URL from Render, or falls back to sqlite for local dev
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        ssl_require=True if 'RENDER' in os.environ else False,
+    )
+}
 # --- End of updated section ---
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
